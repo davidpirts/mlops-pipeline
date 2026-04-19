@@ -84,10 +84,9 @@ def main(args):
         mlflow.log_params(model_cfg['parameters'])
         mlflow.log_metrics({'mae': mae, 'r2': r2})
 
-        # Log and register model
-        mlflow.sklearn.log_model(model, "tuned_model")
+        # Log and register model (`name=` creates an MLflow 3 LoggedModel → experiment Models tab)
+        model_info = mlflow.sklearn.log_model(model, name="tuned_model")
         model_name = model_cfg['name']
-        model_uri = f"runs:/{mlflow.active_run().info.run_id}/tuned_model"
 
         logger.info("Registering model to MLflow Model Registry...")
         client = MlflowClient()
@@ -98,15 +97,15 @@ def main(args):
 
         model_version = client.create_model_version(
             name=model_name,
-            source=model_uri,
-            run_id=mlflow.active_run().info.run_id
+            source=model_info.model_uri,
+            run_id=model_info.run_id,
+            model_id=model_info.model_id,
         )
 
-        # Transition model to "Staging"
-        client.transition_model_version_stage(
-            name=model_name,
-            version=model_version.version,
-            stage="Staging"
+        client.set_registered_model_alias(
+            model_name,
+            "staging",
+            str(model_version.version),
         )
 
         # Add a human-readable description
