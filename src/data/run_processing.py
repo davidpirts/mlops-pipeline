@@ -1,4 +1,5 @@
 # src/data/processor.py
+import argparse
 import pandas as pd
 import numpy as np
 from pathlib import Path
@@ -80,8 +81,16 @@ def process_data(input_file, output_file):
     return df_cleaned
 
 if __name__ == "__main__":
-    # Example usage
-    process_data(
-        input_file="data/raw/house_data.csv", 
-        output_file="data/processed/cleaned_house_data.csv"
+    parser = argparse.ArgumentParser(description="Clean and preprocess raw housing CSV data.")
+    parser.add_argument(
+        "--input",
+        default="data/raw/house_data.csv",
+        help="Path to raw CSV (default: data/raw/house_data.csv)",
     )
+    parser.add_argument(
+        "--output",
+        default="data/processed/cleaned_house_data.csv",
+        help="Path for cleaned CSV (default: data/processed/cleaned_house_data.csv)",
+    )
+    args = parser.parse_args()
+    process_data(input_file=args.input, output_file=args.output)

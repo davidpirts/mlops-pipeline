@@ -19,10 +19,13 @@ house-price-predictor/
 │   └── mlflow/             # Docker Compose setup for MLflow
 ├── models/                 # Trained models and preprocessors
 ├── notebooks/              # Optional Jupyter notebooks for experimentation
+├── streamlit_app/          # Streamlit UI (optional)
 ├── src/
+│   ├── api/                # FastAPI prediction service
 │   ├── data/               # Data cleaning and preprocessing scripts
 │   ├── features/           # Feature engineering pipeline
-│   ├── models/             # Model training and evaluation
+│   └── models/             # Model training and evaluation
+├── Dockerfile              # FastAPI API image
 ├── requirements.txt        # Python dependencies
 └── README.md               # You’re here!
 ```
@@ -74,14 +77,14 @@ To track experiments and model runs:
 
 ```bash
 cd deployment/mlflow
-docker compose -f mlflow-docker-compose.yml up -d
+docker compose -f docker-compose.yaml up -d
 docker compose ps
 ```
 
 > 🐧 **Using Podman?** Use this instead:
 
 ```bash
-podman compose -f mlflow-docker-compose.yml up -d
+podman compose -f docker-compose.yaml up -d
 podman compose ps
 ```
 
@@ -134,16 +137,11 @@ python src/models/train_model.py   --config configs/model_config.yaml   --data d
 ---
 
 
-## Building FastAPI and Streamlit 
+## Building FastAPI and Streamlit
 
-The code for both the apps are available in `src/api` and `streamlit_app` already. To build and launch these apps 
+The code for both apps lives in `src/api` and `streamlit_app`. The repo includes a root `Dockerfile` for FastAPI and `streamlit_app/Dockerfile` for Streamlit. To run both together, add a root `docker-compose.yaml` with `API_URL=http://fastapi:8000` (or the appropriate service name) in the Streamlit environment.
 
-  * Add a  `Dockerfile` in the root of the source code for building FastAPI  
-  * Add `streamlit_app/Dockerfile` to package and build the Streamlit app  
-  * Add `docker-compose.yaml` in the root path to launch both these apps. be sure to provide `API_URL=http://fastapi:8000` in the streamlit app's environment. 
-
-
-Once you have launched both the apps, you should be able to access streamlit web ui and make predictions. 
+Once both apps are running, you can use the Streamlit UI to make predictions. 
 
 You could also test predictions with FastAPI directly using 
 
@@ -156,7 +154,7 @@ curl -X POST "http://localhost:8000/predict" \
   "bathrooms": 2,
   "location": "suburban",
   "year_built": 2000,
-  "condition": fair
+  "condition": "fair"
 }'
 
 ```
